@@ -25,6 +25,8 @@ app.use(express.static('public'));
 // Serve static images
 app.use('/public/images', express.static('public/images'));
 
+app.use(express.static(path.join(__dirname, 'public')));
+
 app.use('/api/auth', authRoutes);
 app.use('/api/attendance', attendanceRoutes);
 
