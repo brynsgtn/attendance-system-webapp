@@ -8,4 +8,15 @@ export default defineConfig({
     react(), 
     tailwindcss()
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Example: Split dependencies into vendor chunk
+          vendor: ['react', 'react-dom', 'axios'],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 1000, // Increase chunk size warning threshold (in KB)
+  },
 })
