@@ -30,7 +30,7 @@ const Header = () => {
 
     const getUserAvatar = () => {
         if (user && user.image) {
-            return `http://localhost:3000/images/${user.image}`;  // Return full URL
+            return `https://intern-attendance-webapp.onrender.com//images/${user.image}`;  // Return full URL
         }
         return "/profile.png"; // Default avatar
     };
