@@ -267,8 +267,6 @@ const validateDateTime = (date, time) => {
     return { valid: true, dateTime };
 };
 
-
-
 // USER
 const updateAttendanceTime = async (req, res) => {
     try {
@@ -451,11 +449,8 @@ const updateAttendanceTime = async (req, res) => {
     }
 };
 
-
-
 // Unified route handler
 export const updateAttendance = (req, res) => updateAttendanceTime(req, res);
-
 
 // ADMIN ONLY
 export const approveAttendance = async (req, res) => {
@@ -565,9 +560,7 @@ export const approveAttendance = async (req, res) => {
     }
 };
 
-
-
-//ADMIN ONLY
+// ADMIN ONLY
 export const rejectAttendance = async (req, res) => {
     try {
         const { date, reason } = req.body;
@@ -656,8 +649,7 @@ export const rejectAttendance = async (req, res) => {
     }
 };
 
-
-//USER ONLY
+// USER ONLY
 export const deleteAttendanceRecord = async (req, res) => {
     try {
         const { attendanceId } = req.params;
@@ -692,10 +684,7 @@ export const deleteAttendanceRecord = async (req, res) => {
     }
 };
 
-
-
 // ADMIN ONLY
-
 export const getAllAttendance = async (req, res) => {
     try {
         const requestingUser = req.user;
@@ -756,7 +745,6 @@ export const getAllAttendance = async (req, res) => {
         });
     }
 };
-
 
 // ADMIN and TEAM LEADERS ONLY
 export const getAllTeamMembersAttendance = async (req, res) => {
@@ -897,7 +885,6 @@ export const getMemberRemainingHours = async (req, res) => {
         });
     }
 };
-
 
 // ADMIN and TEAM LEADERS ONLY
 export const filterAttendanceByName = async (req, res) => {
@@ -1133,7 +1120,7 @@ export const filterAttendanceByDate = async (req, res) => {
     }
 };
 
-
+// USER
 export const getTotalHoursForUser = async (req, res) => {
     const { userId } = req.params;
 
@@ -1154,7 +1141,7 @@ export const getTotalHoursForUser = async (req, res) => {
     }
 };
 
-
+// USER and ADMIN ONLY
 export const createAttendanceForDate = async (req, res) => {
     try {
         const { userId } = req.params;

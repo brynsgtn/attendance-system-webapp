@@ -9,6 +9,8 @@ import utc from 'dayjs/plugin/utc.js';
 import timezone from 'dayjs/plugin/timezone.js';
 import { SearchX } from "lucide-react";
 import * as XLSX from "xlsx";
+import LoadingSpinner from "./LoadingSpinner";
+import { toast } from "react-hot-toast"
 
 // Initialize plugins
 dayjs.extend(utc);
@@ -25,6 +27,7 @@ const InternsTable = ({ refreshKey }) => {
     const [selectedDate, setSelectedDate] = useState('');
     const [nameFilter, setNameFilter] = useState("");
     const [teamFilter, setTeamFilter] = useState("");
+    const [attendanceLoading, setAttendanceLoading] = useState(true);
 
 
 
@@ -32,10 +35,12 @@ const InternsTable = ({ refreshKey }) => {
         const getAttendance = async () => {
             if (!user._id) {
                 console.error("User ID is not available");
+                setAttendanceLoading(false);
                 return;
             }
 
             try {
+                setAttendanceLoading(true);
                 console.log("Fetching attendance for user ID:", user._id);
                 const response = await getAllInternsAttendance(user._id);
                 console.log("API Response:", response);
@@ -48,6 +53,8 @@ const InternsTable = ({ refreshKey }) => {
                 }
             } catch (error) {
                 console.error("Error fetching attendance data:", error);
+            } finally {
+                setAttendanceLoading(false);
             }
         };
         setCurrentPage(1);
@@ -64,10 +71,6 @@ const InternsTable = ({ refreshKey }) => {
         setIsViewModalOpen(false);
         setSelectedRecord(null);
     };
-    const handleNameFilterChange = (e) => {
-        setNameFilter(e.target.value);
-    };
-
 
     const calculateWorkHours = (timeIn, timeOut, isApproved) => {
         // Convert the time_in and time_out to local time
@@ -114,38 +117,46 @@ const InternsTable = ({ refreshKey }) => {
         return totalHours.toFixed(2) + " hrs";
     };
 
-
-
     const handleExportToExcel = () => {
-        const exportData = filteredAttendance.map((record) => {
-            const fullName = `${record.user_id.first_name || ""} ${record.user_id.last_name || ""}`;
-            const date = dayjs(record.time_in).format("YYYY-MM-DD");
-            const timeIn = dayjs(record.time_in).format("hh:mm A");
-            const hasValidTimeOut = record.time_out && dayjs(record.time_out).isValid();
-            const timeOut = hasValidTimeOut ? dayjs(record.time_out).format("hh:mm A") : "No timeout";
-        
-            let hours = calculateWorkHours(record.time_in, record.time_out, record.status);
-            let hoursValue = parseFloat(hours);
-            hours = isNaN(hoursValue) ? 'Incomplete / Pending Request' : hoursValue.toFixed(2);
+        try {
+            if (!filteredAttendance || filteredAttendance.length === 0) {
+                toast.error("No attendance data available to export.");
+                return;
+            }
 
-            return {
-                Name: fullName,
-                Date: date,
-                "Time In": timeIn,
-                "Time Out": record.time_out ? timeOut : "No Time Out",
-                Hours: hours,
-            };
-        });
+            const exportData = filteredAttendance.map((record) => {
+                const fullName = `${record.user_id.first_name || ""} ${record.user_id.last_name || ""}`;
+                const date = dayjs(record.time_in).format("YYYY-MM-DD");
+                const timeIn = dayjs(record.time_in).format("hh:mm A");
+                const hasValidTimeOut = record.time_out && dayjs(record.time_out).isValid();
+                const timeOut = hasValidTimeOut ? dayjs(record.time_out).format("hh:mm A") : "No timeout";
 
-        const worksheet = XLSX.utils.json_to_sheet(exportData);
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "Interns Attendance");
+                let hours = calculateWorkHours(record.time_in, record.time_out, record.status);
+                let hoursValue = parseFloat(hours);
+                hours = isNaN(hoursValue) ? "Incomplete / Pending Request" : hoursValue.toFixed(2);
 
-        // Custom sheet title
-        const sheetTitle = "Interns_Attendance_" + dayjs().format("YYYYMMDD_HHmmss");
-        XLSX.writeFile(workbook, `${sheetTitle}.xlsx`);
+                return {
+                    Name: fullName,
+                    Date: date,
+                    "Time In": timeIn,
+                    "Time Out": record.time_out ? timeOut : "No Time Out",
+                    Hours: hours,
+                };
+            });
+
+            const worksheet = XLSX.utils.json_to_sheet(exportData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Interns Attendance");
+
+            const sheetTitle = "Interns_Attendance_" + dayjs().format("YYYYMMDD_HHmmss");
+            XLSX.writeFile(workbook, `${sheetTitle}.xlsx`);
+
+            toast.success("Excel file has been successfully exported!");
+        } catch (error) {
+            console.error("Export failed:", error);
+            toast.error("Something went wrong while exporting.");
+        }
     };
-
 
 
     // Calculate filtered data during render
@@ -173,14 +184,14 @@ const InternsTable = ({ refreshKey }) => {
         return matchesDate && matchesName && matchesTeam;
     });
 
-    if (isLoading) {
-        return <div className="text-center py-4">Loading...</div>;
+    if (isLoading || attendanceLoading) {
+        return <LoadingSpinner />;
     }
 
     if (!Array.isArray(filteredAttendance) || filteredAttendance.length === 0) {
         return (
             <>
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-4">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between m-4 gap-4">
                     {/* Filter by Date */}
                     <div>
                         <label className="text-sm font-medium mr-2">Filter by Date:</label>
@@ -193,7 +204,7 @@ const InternsTable = ({ refreshKey }) => {
                         {selectedDate && (
                             <button
                                 onClick={() => setSelectedDate('')}
-                                className="ml-2 text-sm text-blue-500 hover:cursor-pointer"
+                                className={`ml-2 text-sm ${isDarkMode ? "text-emerald-500" : "text-blue-500"} hover:cursor-pointer`}
                             >
                                 <SearchX size={20} />
                             </button>
@@ -235,10 +246,12 @@ const InternsTable = ({ refreshKey }) => {
                     </div>
                 </div>
 
-                <div className={`flex justify-center items-center ${isDarkMode ? "bg-gray-900" : "bg-white"} p-4 min-h-[200px]`}>
-                    <div className="text-lg text-gray-500">
-                        No attendance records found.
-                    </div>
+                <div className={`text-center py-10 ${isDarkMode ? "text-gray-300" : "text-gray-600"}`}>
+                    <SearchX size={48} className="mx-auto mb-4 opacity-40" />
+                    <h3 className="text-lg font-medium mb-2">No attendance records found</h3>
+                    <p className="text-sm opacity-75">
+                        Try adjusting your filters or selecting a different date.
+                    </p>
                 </div>
             </>
 
@@ -253,100 +266,119 @@ const InternsTable = ({ refreshKey }) => {
 
     return (
         <>
-            <div className={`overflow-x-auto ${isDarkMode ? "bg-gray-900 text-white" : "bg-white text-black"} p-4 rounded-lg`}>
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-4">
-                    {/* Filter by Date */}
-                    <div>
-                        <label className="text-sm font-medium mr-2">Filter by Date:</label>
-                        <input
-                            type="date"
-                            value={selectedDate}
-                            onChange={(e) => setSelectedDate(e.target.value)}
-                            className={`border rounded px-2 py-1 ${isDarkMode ? "bg-gray-800 text-white border-gray-600" : "bg-white text-black border-gray-300"}`}
-                        />
-                        {selectedDate && (
-                            <button
-                                onClick={() => setSelectedDate('')}
-                                className="ml-2 text-sm text-blue-500 hover:cursor-pointer"
-                            >
-                                <SearchX size={20} />
-                            </button>
-                        )}
-                    </div>
-
-                    {/* Filter by Name */}
-                    <div>
-                        <label className="text-sm font-medium mr-2">Filter by Name:</label>
-                        <input
-                            type="text"
-                            placeholder="Enter name"
-                            value={nameFilter}
-                            onChange={(e) => {
-                                console.log("Name filter input changed:", e.target.value);
-                                setNameFilter(e.target.value);
-                            }}
-                            className={`border rounded px-2 py-1 ${isDarkMode ? "bg-gray-800 text-white border-gray-600" : "bg-white text-black border-gray-300"}`}
-                        />
-                    </div>
-
-                    {/* Filter by Team */}
-                    <div>
-                        <label className="text-sm font-medium mr-2">Filter by Team:</label>
-                        <select
-                            value={teamFilter}
-                            onChange={(e) => setTeamFilter(e.target.value)}
-                            className={`border rounded px-2 py-1 ${isDarkMode ? "bg-gray-800 text-white border-gray-600" : "bg-white text-black border-gray-300"}`}
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between mt-4 mb-3 gap-4">
+                {/* Filter by Date */}
+                <div>
+                    <label className="text-sm font-medium mr-2">Filter by Date:</label>
+                    <input
+                        type="date"
+                        value={selectedDate}
+                        onChange={(e) => setSelectedDate(e.target.value)}
+                        className={`border rounded px-2 py-1 hover:cursor-pointer ${isDarkMode ? "bg-gray-800 text-white border-gray-600" : "bg-white text-black border-gray-300"}`}
+                    />
+                    {selectedDate && (
+                        <button
+                            onClick={() => setSelectedDate('')}
+                            className={`ml-2 text-sm ${isDarkMode ? "text-emerald-500" : "text-blue-500"} hover:cursor-pointer`}
                         >
-                            <option value="">All Teams</option>
-                            {Array.from(new Set(teamAttendance.map((rec) => rec.user_id.team)))
-                                .filter(Boolean)
-                                .map((team) => (
-                                    <option key={team} value={team}>
-                                        {team}
-                                    </option>
-                                ))}
-                        </select>
+                            <SearchX size={20} />
+                        </button>
+                    )}
+                </div>
+
+                {/* Filter by Name */}
+                <div>
+                    <label className="text-sm font-medium mr-2">Filter by Name:</label>
+                    <input
+                        type="text"
+                        placeholder="Enter name"
+                        value={nameFilter}
+                        onChange={(e) => {
+                            console.log("Name filter input changed:", e.target.value);
+                            setNameFilter(e.target.value);
+                        }}
+                        className={`border rounded px-2 py-1 ${isDarkMode ? "bg-gray-800 text-white border-gray-600" : "bg-white text-black border-gray-300"}`}
+                    />
+                </div>
+
+                {/* Filter by Team */}
+                <div>
+                    <label className="text-sm font-medium mr-2">Filter by Team:</label>
+                    <select
+                        value={teamFilter}
+                        onChange={(e) => setTeamFilter(e.target.value)}
+                        className={`border rounded px-2 py-1 hover:cursor-pointer ${isDarkMode ? "bg-gray-800 text-white border-gray-600" : "bg-white text-black border-gray-300"}`}
+                    >
+                        <option value="">All Teams</option>
+                        {Array.from(new Set(teamAttendance.map((rec) => rec.user_id.team)))
+                            .filter(Boolean)
+                            .map((team) => (
+                                <option key={team} value={team}>
+                                    {team}
+                                </option>
+                            ))}
+                    </select>
+                </div>
+                <div className=" justify-end ">
+                    <div className="relative group flex justify-end">
+                        <button
+                            onClick={handleExportToExcel}
+                            className={`px-2 py-2 rounded-md transition-colors duration-300 flex items-center hover:cursor-pointer
+		${isDarkMode ? "bg-gray-700 hover:bg-gray-600 text-white" : "bg-gray-200 hover:bg-gray-300 text-black"}`}
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="20"
+                                height="20"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            >
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                <polyline points="7 10 12 15 17 10" />
+                                <line x1="12" y1="15" x2="12" y2="3" />
+                            </svg>
+                        </button>
+
+                        {/* Tooltip */}
+                        <div
+                            role="tooltip"
+                            className={`absolute top-full right-0 mb-2 px-3 py-2 text-sm font-medium rounded-lg border shadow-md whitespace-nowrap z-50 
+        ${isDarkMode ? "bg-gray-800 text-gray-100 border-gray-700" : "bg-white text-gray-900 border-gray-200"} 
+        opacity-0 invisible group-hover:visible group-hover:opacity-100 transition-opacity duration-200 pointer-events-none`}
+                        >
+                            Export to Excel
+                        </div>
                     </div>
-                    <div className=" justify-end ">
-                    <button
-                    onClick={handleExportToExcel}
-                    className={`px-3 py-2 rounded-md transition-colors duration-300 flex items-center ${isDarkMode
-                        ? "bg-gray-700 hover:bg-gray-600 text-white"
-                        : "bg-gray-200 hover:bg-gray-300 text-black"
-                        }`}
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                        <polyline points="7 10 12 15 17 10" />
-                        <line x1="12" y1="15" x2="12" y2="3" />
-                    </svg>
-                    <span className="ml-1">Export</span>
-                </button>
-                </div>
-                </div>
 
+                </div>
+            </div>
 
+            <div className={`overflow-x-auto ${isDarkMode ? "bg-gray-900 text-white" : "bg-white text-black"} p-4 rounded-lg`}>
                 <table
                     className={`min-w-full ${isDarkMode ? "bg-gray-800 text-white" : "bg-white"}`}
                     key={`table-${nameFilter}-${selectedDate}-${teamFilter}`}
                 >
-                    <thead className={isDarkMode ? "bg-gray-700 text-gray-300" : "bg-gray-50 text-gray-500"}>
+                    <thead className={isDarkMode ? "bg-gray-700 text-gray-300" : "bg-gray-200 text-gray-500"}>
                         <tr>
                             {["Name", "Date", "Time In", "Time Out", "Team", "Action"].map((header) => (
-                                <th key={header} className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                                <th key={header} className="px-6 py-3 text-left text-sm font-bold uppercase tracking-wider">
                                     {header}
                                 </th>
                             ))}
                         </tr>
                     </thead>
                     <tbody className={isDarkMode ? "bg-gray-800 divide-gray-700" : "bg-white divide-gray-200"}>
-                        {currentRecords.map((record, index) => (
+                        {currentRecords.map((record) => (
                             <motion.tr
                                 key={record._id}
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.2 }}
-                                className={` transition ${isDarkMode ? "hover:bg-emerald-500 hover:text-white" : "hover:bg-blue-500 hover:text-white"}`}
+                                className={` transition ${isDarkMode ? "hover:bg-gray-500 " : "hover:bg-gray-100"}`}
                             >
                                 <td className="px-6 py-4 whitespace-nowrap text-sm">
                                     {record.user_id.first_name} {record.user_id.last_name}
@@ -366,7 +398,7 @@ const InternsTable = ({ refreshKey }) => {
                                 <td className="px-6 py-4 whitespace-nowrap text-sm">
                                     <button
                                         onClick={() => handleViewOpenModal(record)}
-                                        className="text-blue-400 hover:text-white hover:cursor-pointer"
+                                        className="text-blue-400 hover:cursor-pointer"
                                     >
                                         View Details
                                     </button>
@@ -382,7 +414,7 @@ const InternsTable = ({ refreshKey }) => {
                         <button
                             onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                             disabled={currentPage === 1}
-                            className={`px-4 py-2 text-sm font-medium rounded-md ${isDarkMode ? "bg-gray-700 text-gray-300" : "bg-gray-200 text-gray-700"} ${currentPage === 1 ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-400"}`}
+                            className={`px-4 py-2 text-sm font-medium rounded-md ${isDarkMode ? "bg-gray-700 text-gray-300" : "bg-gray-200 text-gray-700"} ${currentPage === 1 ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-400  hover:cursor-pointer"}`}
                         >
                             Previous
                         </button>
@@ -394,13 +426,14 @@ const InternsTable = ({ refreshKey }) => {
                         <button
                             onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
                             disabled={currentPage === totalPages}
-                            className={`px-4 py-2 text-sm font-medium rounded-md ${isDarkMode ? "bg-gray-700 text-gray-300" : "bg-gray-200 text-gray-700"} ${currentPage === totalPages ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-400"}`}
+                            className={`px-4 py-2 text-sm font-medium rounded-md  ${isDarkMode ? "bg-gray-700 text-gray-300" : "bg-gray-200 text-gray-700"} ${currentPage === totalPages ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-400 hover:cursor-pointer"}`}
                         >
                             Next
                         </button>
                     </div>
                 )}
             </div>
+
 
             <Modal
                 isOpen={isViewModalOpen}
@@ -447,7 +480,7 @@ const Modal = ({ isOpen, onClose, onEditClick, record, isDarkMode, calculateWork
                     <button
                         onClick={onClose}
                         className="px-4 py-2 text-sm font-medium rounded-lg transition duration-200 
-                        bg-gray-600 text-white hover:bg-gray-700 focus:ring-2 focus:ring-gray-400 focus:outline-none"
+                        bg-gray-600 text-white hover:bg-gray-700 focus:ring-2 focus:ring-gray-400 focus:outline-none hover:cursor-pointer"
                     >
                         Close
                     </button>

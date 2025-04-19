@@ -144,7 +144,7 @@ const UsersPage = () => {
             await fetchInterns();
         } catch (error) {
             console.error("Error deleting intern:", error);
-            toast.success(error.message)
+            toast.error(error.message)
             setError("Failed to delete intern");
         } finally {
             setIsLoading(false);
@@ -236,7 +236,7 @@ const UsersPage = () => {
     };
 
     return (
-        <main className="flex-grow flex justify-center items-center px-4 py-8 my-30 max-h-screen sm:px-1 lg:px-8 max-w-6xl w-full">
+        <main className="flex-grow flex justify-center items-center px-4 py-8 my-50 max-h-screen sm:px-1 lg:px-8 max-w-6xl w-full">
             <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -251,7 +251,7 @@ const UsersPage = () => {
 
                     <button
                         onClick={() => setShowAddModal(true)}
-                        className={`px-4 py-2 rounded-lg text-white ${isDarkMode ? "bg-green-600" : "bg-blue-600"} hover:opacity-90 transition-opacity`}
+                        className={`px-4 py-2 rounded-lg text-white hover:cursor-pointer ${isDarkMode ? "bg-green-600" : "bg-blue-600"} hover:opacity-90 transition-opacity`}
                     >
                         <LucideUserRoundPlus size={20} />
                     </button>
@@ -296,7 +296,24 @@ const UsersPage = () => {
                                                         className="w-8 h-8 rounded-full mr-3"
                                                     />
                                                     <div>
-                                                        <div className="font-medium">{user.full_name}</div>
+                                                        <div className="font-medium flex items-center">
+                                                            {user.full_name}
+                                                            {user.isVerified ? (
+                                                                <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+                                                                    <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"></path>
+                                                                    </svg>
+                                                                    Verified
+                                                                </span>
+                                                            ) : (
+                                                                <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">
+                                                                    <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                                                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd"></path>
+                                                                    </svg>
+                                                                    Unverified
+                                                                </span>
+                                                            )}
+                                                        </div>
                                                         <div className="text-xs text-gray-500 dark:text-gray-400">{user.email}</div>
                                                         <div className="flex items-center text-xs text-gray-500">
                                                             {renderRoleIcon(getUserRole(user))}
@@ -328,10 +345,10 @@ const UsersPage = () => {
                                                 <div className="flex justify-center gap-2">
                                                     {user.remainingHours > 0 ? (
                                                         <>
-                                                            <button onClick={() => handleEdit(user)} className="text-blue-500 hover:text-blue-700">
+                                                            <button onClick={() => handleEdit(user)} className="text-blue-500 hover:text-blue-700 hover:cursor-pointer">
                                                                 <Pencil size={18} />
                                                             </button>
-                                                            <button onClick={() => handleDelete(user)} className="text-red-500 hover:text-red-700">
+                                                            <button onClick={() => handleDelete(user)} className="text-red-500 hover:text-red-700 hover:cursor-pointer">
                                                                 <Trash2 size={18} />
                                                             </button>
                                                         </>
@@ -340,14 +357,14 @@ const UsersPage = () => {
                                                         user.isFinished ? (
                                                             <button
                                                                 onClick={() => handleResendEmail(user.email, user.first_name, user._id)}
-                                                                className="inline-flex items-center gap-1 bg-blue-600 text-white px-3 py-1.5 rounded-full text-xs hover:bg-blue-700 transition"
+                                                                className="hover:cursor-pointer inline-flex items-center gap-1 bg-blue-600 text-white px-3 py-1.5 rounded-full text-xs hover:bg-blue-700 transition"
                                                             >
                                                                 <SendHorizonal size={20} /> Resend Email
                                                             </button>
                                                         ) : (
                                                             <button
                                                                 onClick={() => handleSendCompletionEmail(user.email, user.first_name, user._id)}
-                                                                className="inline-flex items-center gap-1 bg-green-600 text-white px-3 py-1.5 rounded-full text-xs hover:bg-green-700 transition"
+                                                                className="hover:cursor-pointer inline-flex items-center gap-1 bg-green-600 text-white px-3 py-1.5 rounded-full text-xs hover:bg-green-700 transition"
                                                                 disabled={isLoading}
                                                             >
                                                                 {isLoading ? 'Sending...' : <><SendHorizonal size={20} /> Email Completion</>}

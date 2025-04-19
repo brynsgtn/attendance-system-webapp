@@ -7,7 +7,8 @@ import PasswordStrengthMeter from "../components/PasswordStrengthMeter";
 import { Link, useNavigate } from "react-router-dom";
 import PasswordInput from "../components/PasswordInput";
 import { useAuthStore } from "../store/authStore";
-import { Moon, Sun } from "lucide-react"; // Lucide icons
+import { Moon, Sun } from "lucide-react";
+import { toast } from "react-hot-toast";
 
 const SignUpPage = () => {
     const [firstName, setFirstName] = useState('');
@@ -29,9 +30,11 @@ const SignUpPage = () => {
         e.preventDefault();
         try {
             await signup(firstName, middleInitial, lastName, email, password, school, requiredHours, team);
+            toast.success("Account created successfully!")
             navigate("/verify-email");
         } catch (error) {
-            console.log(error.response.data); // Handle API errors
+            toast.error(error.response.data)
+            console.log(error.response.data.message); // Handle API errors
         }
     }
 
@@ -295,9 +298,6 @@ const SignUpPage = () => {
                         >
                             {isLoading ? <Loader className="animate-spin mx-auto" size={24} /> : "Sign Up"}
                         </motion.button>
-
-
-
                     </form>
                 </div>
                 <div className={`px-8 py-4 flex justify-center items-center ${isDarkMode ? "bg-gray-900 bg-opacity-50" : "bg-gray-200"}`}>
@@ -310,6 +310,7 @@ const SignUpPage = () => {
                     </p>
                     <button
                         onClick={darkmode}
+                        type="button"
                         title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
                         className={`p-2 rounded-full border-2 transition duration-300 ${isDarkMode
                             ? "border-white text-white hover:bg-white hover:text-black"

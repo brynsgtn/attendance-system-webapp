@@ -8,20 +8,21 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
 import timezone from 'dayjs/plugin/timezone.js';
 import { AlarmClockPlusIcon } from "lucide-react";
+import LoadingSpinner from "./LoadingSpinner"
 import * as XLSX from 'xlsx'
-
+import { toast } from "react-hot-toast";
 
 // Initialize plugins
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-const UserTable = ({ refreshKey }) => {
+const UserTable = ({ refreshKey, setRefreshKey }) => {
     const { isDarkMode, isLoading, user } = useAuthStore();
     const {
         fetchUserAttendance,
         requestEditAttendance,
         deleteAttendance,
-        createAttendanceForDate
+        createAttendanceForDate,
     } = useAttendanceStore();
 
     const [currentPage, setCurrentPage] = useState(1);
@@ -32,7 +33,6 @@ const UserTable = ({ refreshKey }) => {
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [selectedRecord, setSelectedRecord] = useState(null);
-    const [statusMessage, setStatusMessage] = useState({ message: "", type: "" });
 
     useEffect(() => {
         const getAttendance = async () => {
@@ -63,12 +63,9 @@ const UserTable = ({ refreshKey }) => {
         getAttendance();
     }, [user._id, refreshKey, fetchUserAttendance]);
 
-    // Function to handle opening the create attendance modal
     const handleCreateOpenModal = () => {
         setIsCreateModalOpen(true);
     };
-
-    // Function to handle closing the create attendance modal
     const handleCreateCloseModal = () => {
         setIsCreateModalOpen(false);
     };
@@ -87,11 +84,7 @@ const UserTable = ({ refreshKey }) => {
             );
 
             if (response.success) {
-                // If successful, update the UI
-                setStatusMessage({
-                    message: "Attendance record created successfully!",
-                    type: "success"
-                });
+                toast.success("Attendance record created successfully!")
 
                 // Close the modal
                 setIsCreateModalOpen(false);
@@ -101,16 +94,9 @@ const UserTable = ({ refreshKey }) => {
                 if (refreshResponse && refreshResponse.data && refreshResponse.data.attendance) {
                     setUserAttendance(refreshResponse.data.attendance);
                 }
-
-                // Show success message briefly
-                setTimeout(() => {
-                    setStatusMessage({ message: "", type: "" });
-                }, 3000);
             } else {
-                setStatusMessage({
-                    message: response.message || "Failed to create attendance record",
-                    type: "error"
-                });
+                console.log(response.message || "Failed to create attendance record");
+                toast.error(response.message || "Failed to create attendance record")
             }
         } catch (error) {
             console.error("Error creating attendance record:", error);
@@ -142,8 +128,8 @@ const UserTable = ({ refreshKey }) => {
     };
 
     const handleDeleteConfirmOpen = () => {
-        setIsViewModalOpen(false); // Close the view modal
-        setIsDeleteConfirmOpen(true); // Open the delete confirmation modal
+        setIsViewModalOpen(false);
+        setIsDeleteConfirmOpen(true);
     };
 
     const handleDeleteConfirmClose = () => {
@@ -153,6 +139,7 @@ const UserTable = ({ refreshKey }) => {
     const handleDeleteRecord = async () => {
         if (!selectedRecord || !selectedRecord._id) {
             console.error("No record selected for deletion");
+            toast.error("No record selected for deletion")
             return;
         }
 
@@ -166,29 +153,18 @@ const UserTable = ({ refreshKey }) => {
                 setUserAttendance(prevAttendance =>
                     prevAttendance.filter(record => record._id !== selectedRecord._id)
                 );
-
-                setStatusMessage({
-                    message: "Record deleted successfully",
-                    type: "success"
-                });
-
-                // Clear status message after 3 seconds
-                setTimeout(() => {
-                    setStatusMessage({ message: "", type: "" });
-                }, 3000);
+                toast.success("Record deleted successfully")
             } else {
                 console.error("Error deleting record: Response is undefined");
+                toast.error("Error deleting record: Response is undefined")
             }
         } catch (error) {
             console.error("Error deleting record:", error.message);
             if (error.response && error.response.data) {
                 console.error("Error details:", error.response.data);
+                toast.error(error.response.data);
             }
-
-            setStatusMessage({
-                message: "Failed to delete record",
-                type: "error"
-            });
+            toast.error("Failed to delete record")
         } finally {
             setIsDeleteConfirmOpen(false);
             setSelectedRecord(null);
@@ -214,30 +190,15 @@ const UserTable = ({ refreshKey }) => {
                         record._id === editedRecord._id ? response : record
                     )
                 );
-
-                setStatusMessage({
-                    message: "Record updated successfully",
-                    type: "success"
-                });
-
-                // Clear status message after 3 seconds
-                setTimeout(() => {
-                    setStatusMessage({ message: "", type: "" });
-                }, 3000);
+               setRefreshKey(prev => prev + 1);
+                user.isAdmin? toast.success("Record updated successfully") : toast.success("Record requested successfully")
             } else {
                 console.error("Error updating record:", response);
+                toast.error("Error updating record:", response)
             }
         } catch (error) {
             console.error("Error saving edited record:", error.message);
-            // Add this to see the detailed error response
-            if (error.response && error.response.data) {
-                console.error("Error details:", error.response.data);
-            }
-
-            setStatusMessage({
-                message: "Failed to update record",
-                type: "error"
-            });
+            toast.error("Error saving edited record:", error.message)
         }
     };
 
@@ -288,13 +249,8 @@ const UserTable = ({ refreshKey }) => {
     // Function to export attendance data to Excel (.xlsx)
     const exportToExcel = () => {
         if (!userAttendance || userAttendance.length === 0) {
-            setStatusMessage({
-                message: "No data to export",
-                type: "error"
-            });
-            setTimeout(() => {
-                setStatusMessage({ message: "", type: "" });
-            }, 3000);
+            console.log("No data to export");
+            toast.error("No data to export");
             return;
         }
 
@@ -364,96 +320,101 @@ const UserTable = ({ refreshKey }) => {
             link.click();
             document.body.removeChild(link);
 
-            setStatusMessage({
-                message: "Export successful!",
-                type: "success"
-            });
-            setTimeout(() => {
-                setStatusMessage({ message: "", type: "" });
-            }, 3000);
+            toast.success("Export successful!")
         } catch (error) {
             console.error("Error exporting to Excel:", error);
-            setStatusMessage({
-                message: "Failed to export data",
-                type: "error"
-            });
-            setTimeout(() => {
-                setStatusMessage({ message: "", type: "" });
-            }, 3000);
+            toast.error("Failed to export data")
         }
     };
 
     if (isLoading) {
         return (
             <div className={`flex justify-center items-center ${isDarkMode ? "bg-gray-900" : "bg-white"} p-4`}>
-                <div className="text-lg text-gray-500">
-                    Loading attendance data...
-                </div>
+                <LoadingSpinner />
             </div>
         );
     }
 
     return (
         <>
-            {/* Status message display */}
-            {statusMessage.message && (
-                <motion.div
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className={`mb-4 p-3 rounded-md ${statusMessage.type === "success"
-                        ? "bg-green-100 text-green-800 border border-green-200"
-                        : "bg-red-100 text-red-800 border border-red-200"
-                        }`}
-                >
-                    {statusMessage.message}
-                </motion.div>
-            )}
 
             {/* Add Export and Create Attendance Buttons */}
             <div className="mb-4 flex justify-end space-x-2">
-                <button
-                    onClick={exportToExcel}
-                    className={`px-3 py-2 rounded-md transition-colors duration-300 flex items-center ${isDarkMode
-                        ? "bg-gray-700 hover:bg-gray-600 text-white"
-                        : "bg-gray-200 hover:bg-gray-300 text-black"
-                        }`}
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                        <polyline points="7 10 12 15 17 10" />
-                        <line x1="12" y1="15" x2="12" y2="3" />
-                    </svg>
-                    <span className="ml-1">Export Excel</span>
-                </button>
-                <button
-                    onClick={handleCreateOpenModal}
-                    className={`px-3 py-2 rounded-md transition-colors duration-300 ${isDarkMode
-                        ? "bg-gray-700 hover:bg-gray-600 text-white"
-                        : "bg-gray-200 hover:bg-gray-300 text-black"
-                        }`}
-                >
-                    <AlarmClockPlusIcon size={25} />
-                </button>
-            </div>
+                <div className="relative group inline-block">
+                    <button
+                        onClick={exportToExcel}
+                        className={`px-3 py-2 rounded-md transition-colors duration-300 flex items-center hover:cursor-pointer ${isDarkMode
+                            ? "bg-gray-700 hover:bg-gray-600 text-white"
+                            : "bg-gray-200 hover:bg-gray-300 text-black"
+                            }`}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                            <polyline points="7 10 12 15 17 10" />
+                            <line x1="12" y1="15" x2="12" y2="3" />
+                        </svg>
+                    </button>
+                    <div
+                        role="tooltip"
+                        className={`absolute left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 text-sm font-medium rounded-lg border shadow-md whitespace-nowrap
+      ${isDarkMode
+                                ? "bg-gray-800 text-gray-100 border-gray-700"
+                                : "bg-white text-gray-900 border-gray-200"}
+      opacity-0 invisible group-hover:visible group-hover:opacity-100 transition-opacity duration-200 z-10`}
+                    >
+                        Export to excel
+                        <div className="tooltip-arrow" data-popper-arrow></div>
+                    </div>
+                </div>
 
+                <div className="relative group inline-block">
+                    {/* Button wrapped inside the group */}
+                    <button
+                        onClick={handleCreateOpenModal}
+                        className={`px-3 py-2 rounded-md transition-colors duration-300 hover:cursor-pointer
+      ${isDarkMode
+                                ? "bg-gray-700 hover:bg-gray-600 text-white"
+                                : "bg-gray-200 hover:bg-gray-300 text-black"}`}
+                    >
+                        <AlarmClockPlusIcon size={20} />
+                    </button>
+
+                    {/* Tooltip shown on hover */}
+                    <div
+                        role="tooltip"
+                        className={`absolute left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 text-sm font-medium rounded-lg border shadow-md whitespace-nowrap
+      ${isDarkMode
+                                ? "bg-gray-800 text-gray-100 border-gray-700"
+                                : "bg-white text-gray-900 border-gray-200"}
+      opacity-0 invisible group-hover:visible group-hover:opacity-100 transition-opacity duration-200 z-10`}
+                    >
+                        Create attedance
+                        <div className="tooltip-arrow" data-popper-arrow></div>
+                    </div>
+                </div>
+            </div>
             <div className={`overflow-x-auto ${isDarkMode ? "bg-gray-900 text-white" : "bg-white text-black"} p-4 rounded-lg`}>
                 {(!Array.isArray(userAttendance) || userAttendance.length === 0) ? (
-                    <div className="text-lg text-gray-500 text-center py-8">
-                        No attendance records found.
-                    </div>
+                    <LoadingSpinner />
                 ) : (
                     <>
                         <table className={`min-w-full ${isDarkMode ? "bg-gray-800 text-white" : "bg-white"}`}>
-                            <thead className={isDarkMode ? "bg-gray-700 text-gray-300" : "bg-gray-50 text-gray-500"}>
+                            <thead className={isDarkMode ? "bg-gray-700 text-gray-300" : "bg-gray-200 text-gray-500"}>
                                 <tr>
                                     {["Date", "Time In", "Time Out", "Hours", "Status", "Action"].map((header) => (
-                                        <th key={header} className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">{header}</th>
+                                        <th key={header} className="px-6 py-3 text-left text-sm font-bold uppercase tracking-wider">{header}</th>
                                     ))}
                                 </tr>
                             </thead>
                             <tbody className={isDarkMode ? "bg-gray-800 divide-gray-700" : "bg-white divide-gray-200"}>
-                                {userAttendance.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage).map((record, index) => (
-                                    <tr key={index} className={`hover:text-white transition ${isDarkMode ? "border-gray-700 hover:bg-emerald-600" : "border-gray-200 hover:bg-blue-500"}`}>
+                                {userAttendance.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage).map((record) => (
+                                    <motion.tr
+                                        key={record._id}
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ duration: 0.2 }}
+                                        className={` transition ${isDarkMode ? "hover:bg-gray-500 " : "hover:bg-gray-100"}`}
+                                    >
                                         <td className="px-6 py-4 whitespace-nowrap text-sm">{record.status === "pending" ? formatDate(record.pending_time_in) : formatDate(record.time_in)}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm">{formatTime(record.time_in)}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -480,20 +441,20 @@ const UserTable = ({ refreshKey }) => {
                                         <td className="px-6 py-4 whitespace-nowrap text-sm">
                                             <button
                                                 onClick={() => handleViewOpenModal(record)}
-                                                className="text-blue-400 hover:text-white hover:cursor-pointer"
+                                                className="text-blue-400 hover:cursor-pointer"
                                             >View Details</button>
                                         </td>
-                                    </tr>
+                                    </motion.tr>
                                 ))}
                             </tbody>
                         </table>
 
                         {Math.ceil(userAttendance.length / rowsPerPage) > 1 && (
-                            <div className="flex justify-between items-center mt-4">
+                            <div className="flex justify-between items-center mt-8">
                                 <button
                                     onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                                     disabled={currentPage === 1}
-                                    className={`px-4 py-2 text-sm font-medium rounded-md ${isDarkMode ? "bg-gray-700 text-gray-300" : "bg-gray-200 text-gray-700"} ${currentPage === 1 ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-400"}`}
+                                    className={`px-4 py-2 text-sm font-medium rounded-md  ${isDarkMode ? "bg-gray-700 text-gray-300" : "bg-gray-200 text-gray-700"} ${currentPage === 1 ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-400 hover:cursor-pointer"}`}
                                 >
                                     Previous
                                 </button>
@@ -505,7 +466,7 @@ const UserTable = ({ refreshKey }) => {
                                 <button
                                     onClick={() => setCurrentPage((prev) => Math.min(prev + 1, Math.ceil(userAttendance.length / rowsPerPage)))}
                                     disabled={currentPage === Math.ceil(userAttendance.length / rowsPerPage)}
-                                    className={`px-4 py-2 text-sm font-medium rounded-md ${isDarkMode ? "bg-gray-700 text-gray-300" : "bg-gray-200 text-gray-700"} ${currentPage === Math.ceil(userAttendance.length / rowsPerPage) ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-400"}`}
+                                    className={`px-4 py-2 text-sm font-medium rounded-md  ${isDarkMode ? "bg-gray-700 text-gray-300" : "bg-gray-200 text-gray-700"} ${currentPage === Math.ceil(userAttendance.length / rowsPerPage) ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-400 "}`}
                                 >
                                     Next
                                 </button>
@@ -570,25 +531,26 @@ const Modal = ({ isOpen, onClose, onEditClick, onDeleteClick, record, isDarkMode
             >
                 <h2 className="text-2xl font-semibold mb-4">Attendance Details</h2>
                 <div className="space-y-2 text-sm">
-                    <p><span className="font-medium">Date:</span> {formatDate(record.time_in)}</p>
-                    <p><span className="font-medium">Time In:</span> {formatTime(record.time_in)}</p>
-                    <p><span className="font-medium">Time Out:</span> {record.time_out ? formatTime(record.time_out) : 'N/A'}</p>
-                    <p><span className="font-medium">Hours:</span>                                         {isNaN(parseFloat(record.total_hours))
-                        ? "N/A"
-                        : parseFloat(calculateWorkHours(record.time_in, record.time_out, record.status)).toFixed(2)
-                    }</p>
-                    <p><span className="font-medium">Status:</span> {record.status}</p>
-                    {record.status == 'pending' ? <p><span className="font-medium">Request Reason:</span> {record.request_reason}</p> : ''}
-                    {record.status == 'rejected' ? <p><span className="font-medium">Reject Reason:</span> {record.rejection_reason}</p> : ''}
+                    <p><span className="font-bold">Date:</span> {formatDate(record.time_in)}</p>
+                    <p><span className="font-bold">Time In:</span> {formatTime(record.time_in)}</p>
+                    <p><span className="font-bold">Time Out:</span> {record.time_out ? formatTime(record.time_out) : 'N/A'}</p>
+                    <p><span className="font-bold">Hours: </span>
+                        {isNaN(parseFloat(record.total_hours))
+                            ? "N/A"
+                            : parseFloat(calculateWorkHours(record.time_in, record.time_out, record.status)).toFixed(2)
+                        }</p>
+                    <p><span className="font-bold">Status:</span> {record.status}</p>
+                    {record.status == 'pending' ? <p><span className="font-bold">Request Reason:</span> {record.request_reason}</p> : ''}
+                    {record.status == 'rejected' ? <p><span className="font-bold">Reject Reason:</span> {record.rejection_reason}</p> : ''}
                 </div>
                 <div className="mt-6 flex justify-end space-x-3">
                     <button
                         onClick={() => {
-                            onClose();  // First close this modal
-                            onEditClick(record);  // Then open the edit modal
+                            onClose();
+                            onEditClick(record);
                         }}
                         className="px-4 py-2 text-sm font-medium rounded-lg transition duration-200 
-                        bg-gray-600 text-white hover:bg-gray-700 focus:ring-2 focus:ring-gray-400 focus:outline-none"
+                        bg-blue-600 text-white hover:bg-gray-700 focus:ring-2 focus:ring-gray-400 focus:outline-none hover:cursor-pointer"
                     >
                         Request Edit
                     </button>
@@ -596,7 +558,7 @@ const Modal = ({ isOpen, onClose, onEditClick, onDeleteClick, record, isDarkMode
                     <button
                         onClick={onDeleteClick}
                         className="px-4 py-2 text-sm font-medium rounded-lg transition duration-200 
-                        bg-red-600 text-white hover:bg-red-700 focus:ring-2 focus:ring-red-400 focus:outline-none"
+                        bg-red-600 text-white hover:bg-red-700 focus:ring-2 focus:ring-red-400 focus:outline-none hover:cursor-pointer"
                     >
                         Delete
                     </button>
@@ -604,7 +566,7 @@ const Modal = ({ isOpen, onClose, onEditClick, onDeleteClick, record, isDarkMode
                     <button
                         onClick={onClose}
                         className="px-4 py-2 text-sm font-medium rounded-lg transition duration-200 
-                        bg-gray-600 text-white hover:bg-gray-700 focus:ring-2 focus:ring-gray-400 focus:outline-none"
+                        bg-gray-600 text-white hover:bg-gray-700 focus:ring-2 focus:ring-gray-400 focus:outline-none hover:cursor-pointer"
                     >
                         Close
                     </button>
@@ -640,7 +602,7 @@ const DeleteConfirmModal = ({ isOpen, onClose, onConfirm, record, isDarkMode }) 
                 <div className="mt-6 flex justify-center space-x-4">
                     <button
                         onClick={onClose}
-                        className={`px-4 py-2 text-sm font-medium rounded-lg transition duration-200 
+                        className={`px-4 py-2 text-sm font-medium rounded-lg transition duration-200 hover:cursor-pointer
                         ${isDarkMode ? "bg-gray-700 hover:bg-gray-600" : "bg-gray-200 hover:bg-gray-300"} 
                         focus:ring-2 focus:ring-gray-400 focus:outline-none`}
                     >
@@ -648,7 +610,7 @@ const DeleteConfirmModal = ({ isOpen, onClose, onConfirm, record, isDarkMode }) 
                     </button>
                     <button
                         onClick={onConfirm}
-                        className="px-4 py-2 text-sm font-medium rounded-lg transition duration-200 
+                        className="px-4 py-2 text-sm font-medium rounded-lg transition duration-200 hover:cursor-pointer
                         bg-red-600 text-white hover:bg-red-700 focus:ring-2 focus:ring-red-400 focus:outline-none"
                     >
                         Delete
@@ -659,7 +621,7 @@ const DeleteConfirmModal = ({ isOpen, onClose, onConfirm, record, isDarkMode }) 
     );
 };
 
-const EditModal = ({ isOpen, onClose, record, isDarkMode, onSave }) => {
+const EditModal = ({ isOpen, onClose, record, isDarkMode, onSave}) => {
     const [editedRecord, setEditedRecord] = useState(record || {});
 
     useEffect(() => {
@@ -1015,13 +977,13 @@ const CreateAttendanceModal = ({ isOpen, onClose, onSave, isDarkMode }) => {
                     <div className="mt-4 flex justify-end space-x-2">
                         <button
                             onClick={onClose}
-                            className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-400"
+                            className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-400 hover:cursor-pointer"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
-                            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 hover:cursor-pointer"
                         >
                             Save
                         </button>

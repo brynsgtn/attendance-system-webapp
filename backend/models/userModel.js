@@ -22,26 +22,26 @@ const userSchema = new mongoose.Schema({
     email: {
         type: String,
         required: true,
-        unique: true, // Unique constraint for email
+        unique: true,
     },
     password: {
         type: String,
         required: true,
     },
     school: {
-        type: String, // New field for school
+        type: String,
         required: true,
     },
     required_hours: {
-        type: Number, // Number of hours required for the user
-        required: true, // This field is now required
+        type: Number,
+        required: true,
     },
     team: {
-        type: String, // For dropdown options
+        type: String,
         required: true,
     },
     image: {
-        type: String, // Path to the user's image (optional)
+        type: String,
         default: null,
     },
     lastLogin: {

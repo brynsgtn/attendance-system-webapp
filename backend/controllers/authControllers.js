@@ -326,7 +326,6 @@ export const updateUserRole = async (req, res) => {
     }
 };
 
-
 // USER ONLY
 export const updateUserProfile = async (req, res) => {
     try {
@@ -348,11 +347,11 @@ export const updateUserProfile = async (req, res) => {
             if (user.image) {
                 try {
                     const oldFilePath = path.join(process.cwd(), 'public/images', user.image);
-                    // Check if the file exists before attempting to delete
-                    if (fs.existsSync(oldFilePath)) {
-                        await fs.promises.unlink(oldFilePath);  // Delete the old image asynchronously
-                        console.log(`Old image ${user.image} deleted.`);
-                    }
+          
+                    // Try to access the file before deleting
+                    await fs.access(oldFilePath); // If this fails, it will jump to catch
+                    await fs.unlink(oldFilePath);
+                    console.log(`Old image ${user.image} deleted.`);
                 } catch (err) {
                     console.log('Old file deletion error:', err);
                 }
@@ -419,7 +418,6 @@ export const adminUpdateUserProfile = async (req, res) => {
     }
 
 };
-
 
 // ADMIN ONLY
 export const getAllUsers = async (req, res) => {
@@ -549,7 +547,7 @@ export const deleteIntern = async (req, res) => {
     }
 };
 
-
+// ADMIN ONLY
 export const sendCompletionEmailController = async (req, res) => {
     const { email, memberName, userId } = req.body;
 

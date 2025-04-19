@@ -10,6 +10,7 @@ import timezone from 'dayjs/plugin/timezone.js';
 import { SearchX } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast"
+import LoadingSpinner from "./LoadingSpinner";
 
 // Initialize plugins
 dayjs.extend(utc);
@@ -27,17 +28,19 @@ const RequestsTable = ({ refreshKey }) => {
     const [nameFilter, setNameFilter] = useState("");
     const [teamFilter, setTeamFilter] = useState("");
     const [rejectionReason, setRejectionReason] = useState("");
+    const [attendanceLoading, setAttendanceLoading] = useState(true);
     const navigate = useNavigate();
 
     useEffect(() => {
         const fetchEditRequests = async () => {
             if (!user._id || !user.isAdmin) {
                 console.error("User is not authorized or ID is not available");
+                setAttendanceLoading(false);
                 return;
             }
 
             try {
-                console.log("Fetching edit requests as admin");
+                setAttendanceLoading(true);
                 const response = await fetchAllRequests();
                 console.log("API Response:", response);
 
@@ -49,9 +52,11 @@ const RequestsTable = ({ refreshKey }) => {
                 }
             } catch (error) {
                 console.error("Error fetching edit requests:", error);
+            } finally {
+                setAttendanceLoading(false);
             }
         };
-        
+
         setCurrentPage(1);
         fetchEditRequests();
     }, [user._id, refreshKey, fetchAllRequests]);
@@ -67,34 +72,34 @@ const RequestsTable = ({ refreshKey }) => {
     };
 
     const handleApproveRequest = async (userId) => {
-      const { created_at } = selectedRequest;
-      const date = dayjs(created_at).format("YYYY-MM-DD");
-      
-      try {
-        await approveRequest(date, userId);
-        toast.success("Request approved!")
-        handleViewCloseModal(); // Close the modal after successful approval
-        navigate('/dashboard');
-      } catch (error) {
-        console.error("Error approving request:", error);
-        toast.error("Failed to approve request");
-      }
+        const { created_at } = selectedRequest;
+        const date = dayjs(created_at).format("YYYY-MM-DD");
+
+        try {
+            await approveRequest(date, userId);
+            toast.success("Request approved!")
+            handleViewCloseModal(); // Close the modal after successful approval
+            navigate('/dashboard');
+        } catch (error) {
+            console.error("Error approving request:", error);
+            toast.error(error.response.data.message);
+        }
     };
 
     const handleRejectRequest = async () => {
-      const { created_at } = selectedRequest;
-      const date = dayjs(created_at).format("YYYY-MM-DD");
- 
-      
-      try {
-        await rejectRequest(date, rejectionReason, selectedRequest.user._id);
-        toast.success("Request rejected!");
-        handleViewCloseModal(); // Close the modal after successful rejection
-        navigate('/dashboard');
-      } catch (error) {
-        console.error("Error rejecting request:", error);
-        toast.error("Failed to reject request");
-      }
+        const { created_at } = selectedRequest;
+        const date = dayjs(created_at).format("YYYY-MM-DD");
+
+
+        try {
+            await rejectRequest(date, rejectionReason, selectedRequest.user._id);
+            toast.success("Request rejected!");
+            handleViewCloseModal(); // Close the modal after successful rejection
+            navigate('/dashboard');
+        } catch (error) {
+            console.error("Error rejecting request:", error);
+            toast.error(error.response.data.message);
+        }
     };
 
     // Apply all filters to the data
@@ -103,22 +108,22 @@ const RequestsTable = ({ refreshKey }) => {
         const matchesDate = selectedDate
             ? dayjs(request.created_at).format("YYYY-MM-DD") === selectedDate
             : true;
-        
+
         // Name filter - check if the user's full name includes the name filter
         const matchesName = nameFilter
             ? request.user.full_name.toLowerCase().includes(nameFilter.toLowerCase())
             : true;
-        
+
         // Team filter - check if the user's team matches the team filter
         const matchesTeam = teamFilter
             ? request.user.team === teamFilter
             : true;
-        
+
         return matchesDate && matchesName && matchesTeam;
     });
 
-    if (isLoading) {
-        return <div className="text-center py-4">Loading...</div>;
+    if (isLoading || attendanceLoading) {
+        return <LoadingSpinner />;
     }
 
     if (!user.isAdmin) {
@@ -133,7 +138,7 @@ const RequestsTable = ({ refreshKey }) => {
 
     if (!Array.isArray(filteredRequests) || filteredRequests.length === 0) {
         return (
-            <>
+            <div>
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-4">
                     {/* Filter by Date */}
                     <div>
@@ -147,7 +152,7 @@ const RequestsTable = ({ refreshKey }) => {
                         {selectedDate && (
                             <button
                                 onClick={() => setSelectedDate('')}
-                                className="ml-2 text-sm text-blue-500 hover:cursor-pointer"
+                                className={`ml-2 text-sm ${isDarkMode ? "text-emerald-500" : "text-blue-500"} hover:cursor-pointer`}
                             >
                                 <SearchX size={20} />
                             </button>
@@ -185,12 +190,11 @@ const RequestsTable = ({ refreshKey }) => {
                         </select>
                     </div>
                 </div>
-                <div className={`flex justify-center items-center ${isDarkMode ? "bg-gray-900" : "bg-white"} p-4 min-h-[200px]`}>
-                    <div className="text-lg text-gray-500">
-                        No edit requests found.
-                    </div>
+                <div className={`text-center py-10 ${isDarkMode ? "text-gray-300" : "text-gray-600"}`}>
+                    <SearchX size={48} className="mx-auto mb-4 opacity-40" />
+                    <h3 className="text-lg font-medium mb-2">No attendance records found</h3>
                 </div>
-            </>
+            </div>
         );
     }
 
@@ -200,64 +204,65 @@ const RequestsTable = ({ refreshKey }) => {
 
     return (
         <>
-            <div className={`overflow-x-auto ${isDarkMode ? "bg-gray-900 text-white" : "bg-white text-black"} p-4 rounded-lg`}>
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-4">
-                    {/* Filter by Date */}
-                    <div>
-                        <label className="text-sm font-medium mr-2">Filter by Date:</label>
-                        <input
-                            type="date"
-                            value={selectedDate}
-                            onChange={(e) => setSelectedDate(e.target.value)}
-                            className={`border rounded px-2 py-1 ${isDarkMode ? "bg-gray-800 text-white border-gray-600" : "bg-white text-black border-gray-300"}`}
-                        />
-                        {selectedDate && (
-                            <button
-                                onClick={() => setSelectedDate('')}
-                                className="ml-2 text-sm text-blue-500 hover:cursor-pointer"
-                            >
-                                <SearchX size={20} />
-                            </button>
-                        )}
-                    </div>
-
-                    {/* Filter by Name */}
-                    <div>
-                        <label className="text-sm font-medium mr-2">Filter by Name:</label>
-                        <input
-                            type="text"
-                            placeholder="Enter name"
-                            value={nameFilter}
-                            onChange={(e) => setNameFilter(e.target.value)}
-                            className={`border rounded px-2 py-1 ${isDarkMode ? "bg-gray-800 text-white border-gray-600" : "bg-white text-black border-gray-300"}`}
-                        />
-                    </div>
-
-                    {/* Filter by Team */}
-                    <div>
-                        <label className="text-sm font-medium mr-2">Filter by Team:</label>
-                        <select
-                            value={teamFilter}
-                            onChange={(e) => setTeamFilter(e.target.value)}
-                            className={`border rounded px-2 py-1 ${isDarkMode ? "bg-gray-800 text-white border-gray-600" : "bg-white text-black border-gray-300"}`}
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between mt-4 mb-3 gap-4">
+                {/* Filter by Date */}
+                <div>
+                    <label className="text-sm font-medium mr-2">Filter by Date:</label>
+                    <input
+                        type="date"
+                        value={selectedDate}
+                        onChange={(e) => setSelectedDate(e.target.value)}
+                        className={`border rounded px-2 py-1 ${isDarkMode ? "bg-gray-800 text-white border-gray-600" : "bg-white text-black border-gray-300"}`}
+                    />
+                    {selectedDate && (
+                        <button
+                            onClick={() => setSelectedDate('')}
+                            className={`ml-2 text-sm ${isDarkMode ? "text-emerald-500" : "text-blue-500"} hover:cursor-pointer`}
                         >
-                            <option value="">All Teams</option>
-                            {Array.from(new Set(editRequests.map((req) => req.user.team)))
-                                .filter(Boolean)
-                                .map((team) => (
-                                    <option key={team} value={team}>
-                                        {team}
-                                    </option>
-                                ))}
-                        </select>
-                    </div>
+                            <SearchX size={20} />
+                        </button>
+                    )}
                 </div>
 
+                {/* Filter by Name */}
+                <div>
+                    <label className="text-sm font-medium mr-2">Filter by Name:</label>
+                    <input
+                        type="text"
+                        placeholder="Enter name"
+                        value={nameFilter}
+                        onChange={(e) => setNameFilter(e.target.value)}
+                        className={`border rounded px-2 py-1 ${isDarkMode ? "bg-gray-800 text-white border-gray-600" : "bg-white text-black border-gray-300"}`}
+                    />
+                </div>
+
+                {/* Filter by Team */}
+                <div>
+                    <label className="text-sm font-medium mr-2">Filter by Team:</label>
+                    <select
+                        value={teamFilter}
+                        onChange={(e) => setTeamFilter(e.target.value)}
+                        className={`border rounded px-2 py-1 ${isDarkMode ? "bg-gray-800 text-white border-gray-600" : "bg-white text-black border-gray-300"}`}
+                    >
+                        <option value="">All Teams</option>
+                        {Array.from(new Set(editRequests.map((req) => req.user.team)))
+                            .filter(Boolean)
+                            .map((team) => (
+                                <option key={team} value={team}>
+                                    {team}
+                                </option>
+                            ))}
+                    </select>
+                </div>
+            </div>
+
+            <div className={`overflow-x-auto ${isDarkMode ? "bg-gray-900 text-white" : "bg-white text-black"} p-4 rounded-lg`}>
+
                 <table className={`min-w-full ${isDarkMode ? "bg-gray-800 text-white" : "bg-white"}`}>
-                    <thead className={isDarkMode ? "bg-gray-700 text-gray-300" : "bg-gray-50 text-gray-500"}>
+                    <thead className={isDarkMode ? "bg-gray-700 text-gray-300" : "bg-gray-200 text-gray-500"}>
                         <tr>
                             {["Name", "Team", "Requested Time In", "Requested Time Out", "Requested Date", "Action"].map((header) => (
-                                <th key={header} className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                                <th key={header} className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">
                                     {header}
                                 </th>
                             ))}
@@ -270,7 +275,7 @@ const RequestsTable = ({ refreshKey }) => {
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.2 }}
-                                className={`hover:text-white transition ${isDarkMode ? "hover:bg-gray-700" : "hover:bg-gray-100"}`}
+                                className={`transition ${isDarkMode ? "hover:bg-gray-500" : "hover:bg-gray-100"}`}
                             >
                                 <td className="px-6 py-4 whitespace-nowrap text-sm">
                                     {request.user.full_name}
@@ -290,7 +295,7 @@ const RequestsTable = ({ refreshKey }) => {
                                 <td className="px-6 py-4 whitespace-nowrap text-sm">
                                     <button
                                         onClick={() => handleViewOpenModal(request)}
-                                        className="text-blue-400 hover:text-white hover:cursor-pointer"
+                                        className="text-blue-400 hover:cursor-pointer"
                                     >
                                         View Details
                                     </button>
@@ -341,15 +346,15 @@ const RequestsTable = ({ refreshKey }) => {
 
 export default RequestsTable;
 
-const RequestModal = ({ isOpen, onClose, request, isDarkMode, approveRequest, rejectRequest, rejectionReason, setRejectionReason}) => {
+const RequestModal = ({ isOpen, onClose, request, isDarkMode, approveRequest, rejectRequest, rejectionReason, setRejectionReason }) => {
 
 
     if (!isOpen || !request) return null;
 
     const handleReject = () => {
-      const date = dayjs(request.created_at).format("YYYY-MM-DD");
-      rejectRequest(date, rejectionReason, request.user._id);
-  };
+        const date = dayjs(request.created_at).format("YYYY-MM-DD");
+        rejectRequest(date, rejectionReason, request.user._id);
+    };
 
 
     return (
@@ -367,7 +372,7 @@ const RequestModal = ({ isOpen, onClose, request, isDarkMode, approveRequest, re
                     <p><span className="font-medium">Email:</span> {request.user.email}</p>
                     <p><span className="font-medium">Team:</span> {request.user.team}</p>
                     <p><span className="font-medium">School:</span> {request.user.school}</p>
-                    
+
                     <div className="mt-4 mb-2 border-t pt-4">
                         <h3 className="font-medium text-lg mb-2">Time Changes</h3>
                         <div className="grid grid-cols-2 gap-4">
@@ -389,7 +394,7 @@ const RequestModal = ({ isOpen, onClose, request, isDarkMode, approveRequest, re
                             </div>
                         </div>
                     </div>
-                    
+
                     <div className="mt-4 pt-2">
                         <p className="font-medium">Request Reason:</p>
                         <p className={`mt-1 p-2 ${isDarkMode ? 'bg-gray-800' : 'dark:bg-gray-100'} rounded`}>
@@ -405,25 +410,24 @@ const RequestModal = ({ isOpen, onClose, request, isDarkMode, approveRequest, re
                         value={rejectionReason}
                         onChange={(e) => setRejectionReason(e.target.value)}
                         placeholder="Enter reason for rejection"
-                        className={`mt-1 p-2 w-full rounded border ${
-                            isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-300 text-black'
-                        }`}
+                        className={`mt-1 p-2 w-full rounded border ${isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-300 text-black'
+                            }`}
                         rows="3"
                     />
                 </div>
 
                 <div className="mt-6 flex justify-between">
                     <div>
-                        <button 
+                        <button
                             className="px-4 py-2 text-sm font-medium rounded-lg transition duration-200 
-                            bg-red-600 text-white hover:bg-red-700 focus:ring-2 focus:ring-red-400 focus:outline-none mr-2"
+                            bg-red-600 text-white hover:bg-red-700 focus:ring-2 focus:ring-red-400 focus:outline-none mr-2 hover:cursor-pointer"
                             onClick={handleReject}
                         >
                             Reject
                         </button>
-                        <button 
+                        <button
                             className="px-4 py-2 text-sm font-medium rounded-lg transition duration-200 
-                            bg-green-600 text-white hover:bg-green-700 focus:ring-2 focus:ring-green-400 focus:outline-none"
+                            bg-green-600 text-white hover:bg-green-700 focus:ring-2 focus:ring-green-400 focus:outline-none hover:cursor-pointer"
                             onClick={() => approveRequest(request.user._id)}
                         >
                             Approve
@@ -432,7 +436,7 @@ const RequestModal = ({ isOpen, onClose, request, isDarkMode, approveRequest, re
                     <button
                         onClick={onClose}
                         className="px-4 py-2 text-sm font-medium rounded-lg transition duration-200 
-                        bg-gray-600 text-white hover:bg-gray-700 focus:ring-2 focus:ring-gray-400 focus:outline-none"
+                        bg-gray-600 text-white hover:bg-gray-700 focus:ring-2 focus:ring-gray-400 focus:outline-none hover:cursor-pointer"
                     >
                         Close
                     </button>

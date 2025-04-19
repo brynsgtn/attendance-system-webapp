@@ -7,7 +7,7 @@ const Landing = () => {
     const { isDarkMode, isAuthenticated, darkmode, user } = useAuthStore();
 
     useEffect(() => {
-        console.log (user)
+        console.log(user)
     })
     return (
         <div className="grid md:grid-cols-2 items-center md:gap-4 gap-8 max-w-5xl max-md:max-w-md mx-auto px-4 py-10 h-screen">
@@ -77,6 +77,11 @@ const Landing = () => {
                     )}
                     <button
                         onClick={darkmode}
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                                e.preventDefault(); // Prevent triggering on Enter
+                            }
+                        }}
                         title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
                         className={`p-2 rounded-full border-2 transition duration-300 ${isDarkMode
                             ? "border-white text-white hover:bg-white hover:text-black"

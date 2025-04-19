@@ -1,7 +1,5 @@
 import { motion } from "framer-motion";
 import { useAuthStore } from "../store/authStore";
-import { formatDate } from "../utils/date";
-import UserTable from "../components/UserTable";
 import { Edit, LogOut, LogIn, X } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -12,7 +10,7 @@ import TabMenu from "../components/TabMenu";
 
 const DashboardPage = () => {
 	const { user, isDarkMode } = useAuthStore();
-	const { timeIn, timeOut, getTotalHours, refreshAttendance } = useAttendanceStore();
+	const { timeIn, timeOut, getTotalHours, refreshAttendance, isLoading } = useAttendanceStore();
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [totalHours, setTotalHours] = useState(0);
 	const [refreshKey, setRefreshKey] = useState(0); // State to trigger refetch
@@ -179,13 +177,13 @@ const DashboardPage = () => {
 							</div>
 							<div className="mt-4 flex flex-col md:flex-row items-center justify-center h-full gap-3">
 								<button
-									className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white shadow-md transition"
+									className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white shadow-md transition hover:cursor-pointer"
 									onClick={handleTimeIn}
 								>
 									<LogIn size={18} /> Time In
 								</button>
 								<button
-									className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white shadow-md transition"
+									className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white shadow-md transition hover:cursor-pointer"
 									onClick={handleTimeOut}
 								>
 									<LogOut size={18} /> Time Out
@@ -199,14 +197,14 @@ const DashboardPage = () => {
 							animate={{ opacity: 1, y: 0 }}
 							transition={{ delay: 0.4 }}
 						>
-							<TabMenu refreshKey={refreshKey} />
+							<TabMenu refreshKey={refreshKey} isLoading={isLoading} setRefreshKey={setRefreshKey}/>
 						</motion.div>
 					</div>
 				</motion.div>
 			</main>
 
 			{/* Edit Profile Modal */}
-			<EditProfileModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+			<EditProfileModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false) } />
 		</>
 	);
 };
@@ -258,6 +256,7 @@ const EditProfileModal = ({ isOpen, onClose }) => {
 
 			if (updatedUser) {
 				console.log("Profile updated successfully:", updatedUser);
+				toast.success("Profile updated successfully")
 				onClose(); // Close the modal
 
 				// Instead of immediately navigating, add a small delay
@@ -267,6 +266,7 @@ const EditProfileModal = ({ isOpen, onClose }) => {
 			}
 		} catch (error) {
 			console.error("Error updating profile:", error);
+			toast.error(error.response.data.message);
 		} finally {
 			setIsSubmitting(false);
 		}
@@ -284,7 +284,7 @@ const EditProfileModal = ({ isOpen, onClose }) => {
 			>
 				<div className="flex justify-between items-center mb-4">
 					<h2 className="text-xl font-bold">Edit Profile</h2>
-					<button onClick={onClose} className="p-2 rounded-full hover:bg-gray-700 transition">
+					<button onClick={onClose} className="p-2 rounded-full hover:bg-gray-700 transition hover:cursor-pointer">
 						<X size={18} />
 					</button>
 				</div>
@@ -356,14 +356,14 @@ const EditProfileModal = ({ isOpen, onClose }) => {
 						<button
 							type="button"
 							onClick={onClose}
-							className="px-4 py-2 rounded-md bg-gray-600 text-white hover:bg-gray-700 transition"
+							className="px-4 py-2 rounded-md bg-gray-600 text-white hover:bg-gray-700 transition hover:cursor-pointer"
 						>
 							Cancel
 						</button>
 						<button
 							type="submit"
 							disabled={isSubmitting}
-							className="px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 transition"
+							className="px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 transition hover:cursor-pointer"
 						>
 							{isSubmitting ? 'Saving...' : 'Save Changes'}
 						</button>

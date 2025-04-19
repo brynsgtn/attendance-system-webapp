@@ -5,7 +5,7 @@ import InternsTable from "./InternsTable";
 import RequestTable from "./RequestsTable";
 import TeamTable from "./TeamTable";
 
-const TabMenu = ({refreshKey}) => {
+const TabMenu = ({refreshKey, setRefreshKey}) => {
   const [activeTab, setActiveTab] = useState("My Attendance");
   const { isDarkMode, user } = useAuthStore();
 
@@ -21,15 +21,15 @@ const TabMenu = ({refreshKey}) => {
   const renderActiveComponent = () => {
     switch (activeTab) {
       case "My Attendance":
-        return <UserTable refreshKey={refreshKey} />;
+        return <UserTable refreshKey={refreshKey}  setRefreshKey={setRefreshKey}/>;
       case "Interns Attendance":
-        return <InternsTable />;
+        return <InternsTable refreshKey={refreshKey}/>;
       case "My Team Attendance":
-        return <TeamTable />
+        return <TeamTable refreshKey={refreshKey}/>
       case "Edit Requests":
-        return <RequestTable />;
+        return <RequestTable refreshKey={refreshKey}/>;
       default:
-        return <UserTable />;
+        return <UserTable refreshKey={refreshKey} setRefreshKey={setRefreshKey}/>;
     }
   };
 
@@ -44,7 +44,7 @@ const TabMenu = ({refreshKey}) => {
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`relative inline-flex items-center px-4 py-2 text-sm sm:text-base font-medium transition-colors duration-300 rounded-t-md
+            className={`relative inline-flex items-center px-4 py-2 text-sm sm:text-base font-medium transition-colors duration-300 rounded-t-md hover:cursor-pointer
               ${
                 activeTab === tab
                   ? `${
@@ -72,9 +72,9 @@ const TabMenu = ({refreshKey}) => {
         }`}
       >
         <h3
-          className={`text-lg sm:text-xl font-semibold ${
+          className={`text-2xl font-semibold ${
             isDarkMode ? "text-emerald-500" : "text-blue-500"
-          } mb-4`}
+          }`}
         >
           {activeTab}
         </h3>

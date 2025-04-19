@@ -85,7 +85,7 @@ const Footer = () => {
                 text-xl
             `}
             >
-              &nbsp;&nbsp;&lt;brynsgtn/&gt;&nbsp;&nbsp;
+              &nbsp;&nbsp;&lt;brynsgtn/&gt;
             </a>
             . All Rights Reserved.
           </p>

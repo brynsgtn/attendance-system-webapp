@@ -2,15 +2,14 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useAuthStore } from "../store/authStore";
 import { useNavigate, useParams } from "react-router-dom";
-import Input from "../components/Input";
-import { Lock } from "lucide-react";
+import { Lock, Sun, Moon } from "lucide-react";
 import toast from "react-hot-toast";
 import PasswordInput from "../components/PasswordInput";
 
 const ResetPasswordPage = () => {
 	const [password, setPassword] = useState("");
 	const [confirmPassword, setConfirmPassword] = useState("");
-	const { resetPassword, error, isLoading, message, isDarkMode } = useAuthStore();
+	const { resetPassword, isLoading, message, isDarkMode, darkmode } = useAuthStore();
 
 	const confirmedPassword = password === confirmPassword;
 
@@ -33,7 +32,7 @@ const ResetPasswordPage = () => {
 			}, 2000);
 		} catch (error) {
 			console.error(error);
-			toast.error(error.message || "Error resetting password");
+			toast.error(error.response.data.message || "Error resetting password");
 		}
 	};
 
@@ -45,12 +44,25 @@ const ResetPasswordPage = () => {
 			className={`max-w-md w-full ${isDarkMode ? 'bg-gray-800' : 'bg-gray-300'} bg-opacity-50 rounded-2xl shadow-xl overflow-hidden`}
 		>
 			<div className='p-8'>
-				<h2 className={`text-3xl font-bold mb-6 text-center bg-gradient-to-r ${isDarkMode ? 'from-green-400 to-emerald-500' : 'from-blue-600 to-blue-500'} text-transparent bg-clip-text`}>
-					Reset Password
-				</h2>
-				{error && <p className='text-red-500 text-sm mb-4'>{error}</p>}
+			<h2 className={`text-3xl font-bold mb-6 text-center bg-gradient-to-r ${isDarkMode ? 'from-green-400 to-emerald-500' : 'from-blue-600 to-blue-500'} text-transparent bg-clip-text`}>
+						Reset Password
+					</h2>
+				<div className="flex justify-between py-5">
 				{message && <p className={`${isDarkMode ? "text-gray-400" : "text-gray-600"} text-sm mb-4`}>{message}</p>}
-
+					<div className="text-right">
+						<button
+							onClick={darkmode}
+							type="button"
+							title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+							className={`p-2 rounded-full border-2 transition duration-300 ${isDarkMode
+								? "border-white text-white hover:bg-white hover:text-black"
+								: "border-gray-800 text-gray-800 hover:bg-gray-800 hover:text-white"
+								}`}
+						>
+							{isDarkMode ? <Sun size={10} /> : <Moon size={10} />}
+						</button>
+					</div>
+				</div>
 				<form onSubmit={handleSubmit}>
 					<div>
 						<PasswordInput

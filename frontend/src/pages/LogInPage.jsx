@@ -5,7 +5,8 @@ import { Link, useNavigate } from "react-router-dom";
 import Input from "../components/Input";
 import PasswordInput from "../components/PasswordInput";
 import { useAuthStore } from "../store/authStore";
-import { Moon, Sun } from "lucide-react"; // Lucide icons
+import { Moon, Sun } from "lucide-react";
+import { toast } from "react-hot-toast";
 
 const LogInPage = () => {
   const [email, setEmail] = useState("");
@@ -20,12 +21,14 @@ const LogInPage = () => {
     e.preventDefault();
     try {
       await login(email, password);
-
+      toast.success("Logged-in successfully!")
     } catch (error) {
       if (error.response?.data?.message === 'User not verified') {
+        toast.error(error.response?.data?.message)
         setShowResend(true);
       } else {
         console.log(error);
+        toast.error(error.response?.data?.message)
       }
     }
   };
@@ -33,8 +36,10 @@ const LogInPage = () => {
   const handleResendVerification = async () => {
     try {
       await resendVerificationEmail(email);
+      toast.success("Email verification sent!")
       navigate("/verify-email");
     } catch (error) {
+      toast.error(error.response.data);
       console.log(error.response.data);
     }
   };
@@ -78,10 +83,11 @@ const LogInPage = () => {
             </Link>
             <button
               onClick={darkmode}
+              type="button"
               title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
               className={`p-2 ms-auto rounded-full border-2 transition duration-300 ${isDarkMode
-                  ? "border-white text-white hover:bg-white hover:text-black"
-                  : "border-gray-800 text-gray-800 hover:bg-gray-800 hover:text-white"
+                ? "border-white text-white hover:bg-white hover:text-black"
+                : "border-gray-800 text-gray-800 hover:bg-gray-800 hover:text-white"
                 }`}
             >
               {isDarkMode ? <Sun size={15} /> : <Moon size={15} />}
@@ -110,7 +116,7 @@ const LogInPage = () => {
             </p>
             <button
               onClick={handleResendVerification}
-              className={`hover:underline cursor-pointer ${isDarkMode ? 'hover:text-green-400 text-green-500 ' : 'text-blue-500 hover:text-BLUE-600'}`}
+              className={`hover:underline cursor-pointer ${isDarkMode ? 'hover:text-green-400 text-green-500 ' : 'text-blue-500 hover:text-blue-600'}`}
               disabled={isLoading}
             >
               Resend Verification Email

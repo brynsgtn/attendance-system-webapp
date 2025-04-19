@@ -7,12 +7,15 @@ const API_URL = "http://localhost:3000/api/attendance";
 export const useAttendanceStore = create((set) => ({
 
     fetchUserAttendance: async (userId) => {
+        set({ isLoading: true, error: null });
         try {
             const response = await axios.get(`${API_URL}/get-attendance/${userId}`);
             console.log("Fetched Attendance Data:", response); // Log attendance
+            set({ isLoading: false });
             return response;
         } catch (error) {
             console.error("Error fetching attendance:", error);
+            set({ isLoading: false, error: error.response?.data?.message || "Failed to fetch attendance" });
         }
     },
     refreshAttendance: async (userId) => {

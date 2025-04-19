@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { toast } from "react-hot-toast";
 import { useAuthStore } from "../store/authStore";
-import { Moon, Sun } from "lucide-react"; // Lucide icons
+import { Moon, Sun } from "lucide-react"; 
 
 
 const EmailVerificationPage = () => {
@@ -11,7 +11,7 @@ const EmailVerificationPage = () => {
     const inputRefs = useRef([]);
     const navigate = useNavigate();
 
-    const { error, isLoading, verifyEmail, isDarkMode, darkmode } = useAuthStore();
+    const { error, isLoading, verifyEmail, isDarkMode, darkmode, resendVerificationEmail } = useAuthStore();
 
 
     const handleChange = (index, value) => {
@@ -55,8 +55,18 @@ const EmailVerificationPage = () => {
             toast.success("Email verified successfully");
         } catch (error) {
             console.log(error);
+            toast.error(error.response.data.message);
         }
     };
+
+    const handleResendVerification = async () => {
+        try {
+          await resendVerificationEmail(email);
+
+        } catch (error) {
+          console.log(error.response.data);
+        }
+      };
 
     // Auto submit when all fields are filled
     useEffect(() => {
@@ -76,6 +86,7 @@ const EmailVerificationPage = () => {
                 <div className="text-right">
                     <button
                         onClick={darkmode}
+                        type="button"
                         title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
                         className={`p-2 rounded-full border-2 transition duration-300 ${isDarkMode
                             ? "border-white text-white hover:bg-white hover:text-black"
@@ -109,13 +120,25 @@ const EmailVerificationPage = () => {
                             />
                         ))}
                     </div>
+                    <div className={`mt-4 text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                        <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                            Didn't receive a verification email?
+                        </p>
+                        <button
+                            onClick={handleResendVerification}
+                            className={`hover:underline cursor-pointer ${isDarkMode ? 'hover:text-green-400 text-green-500 ' : 'text-blue-500 hover:text-blue-600'}`}
+                            disabled={isLoading}
+                        >
+                            Resend Verification Email
+                        </button>
+                    </div>
                     {error && <p className='text-red-500 font-semibold mt-2'>{error}</p>}
                     <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         type='submit'
                         disabled={isLoading || code.some((digit) => !digit)}
-                        className={`mt-5 w-full py-3 px-4 ${isDarkMode
+                        className={`mt-2 w-full py-3 px-4 ${isDarkMode
                             ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 focus:ring-green-500'
                             : 'bg-gradient-to-r from-blue-400 to-indigo-500 text-white hover:from-blue-500 hover:to-indigo-600 focus:ring-blue-500'
                             } font-bold rounded-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 transition duration-200 cursor-pointer`}

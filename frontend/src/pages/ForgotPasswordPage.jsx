@@ -4,6 +4,7 @@ import { useAuthStore } from "../store/authStore";
 import Input from "../components/Input";
 import { ArrowLeft, Loader, Mail, Sun, Moon } from "lucide-react";
 import { Link } from "react-router-dom";
+import { toast } from "react-hot-toast";
 
 const ForgotPasswordPage = () => {
 	const [email, setEmail] = useState("");
@@ -12,9 +13,16 @@ const ForgotPasswordPage = () => {
 	const { isLoading, forgotPassword, isDarkMode, darkmode } = useAuthStore();
 
 	const handleSubmit = async (e) => {
-		e.preventDefault();
-		await forgotPassword(email);
-		setIsSubmitted(true);
+		try {
+			e.preventDefault();
+			await forgotPassword(email);
+			toast.success("Reset link sent to email!")
+			setIsSubmitted(true);
+		} catch (error) {
+			console.log(error.response.data.message);
+			toast.error(error.response.data.message)
+		}
+
 	};
 
 	return (
@@ -28,6 +36,7 @@ const ForgotPasswordPage = () => {
 			<div className="text-right">
                     <button
                         onClick={darkmode}
+						type="button"
                         title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
                         className={`p-2 rounded-full border-2 transition duration-300 ${isDarkMode
                             ? "border-white text-white hover:bg-white hover:text-black"

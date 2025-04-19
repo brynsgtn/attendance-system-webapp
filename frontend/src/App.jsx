@@ -23,6 +23,15 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
+// protect routes that require admin authentication only
+const AdminRoute = ({ children }) => {
+  const { isAuthenticated, user } = useAuthStore();
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (!user.isVerified) return <Navigate to="/verify-email" replace />;
+  if (!user.isAdmin) return <Navigate to="/dashboard" replace />;
+  return children;
+};
+
 // redirect authenticated users to the home page
 const RedirectAuthenticatedUser = ({ children }) => {
   const { isAuthenticated, user } = useAuthStore();
@@ -40,16 +49,16 @@ function App() {
 
   // Paths that should not show the header
   const noHeaderandFooterPaths = ["/", "/signup", "/login", "/verify-email", "/forgot-password"];
-  const shouldShowHeaderandFooter = !noHeaderandFooterPaths.includes(location.pathname)&&
-  !location.pathname.startsWith("/reset-password/");;
+  const shouldShowHeaderandFooter = !noHeaderandFooterPaths.includes(location.pathname) &&
+    !location.pathname.startsWith("/reset-password/");;
 
   if (isCheckingAuth) return <LoadingSpinner />;
 
   return (
     <div
       className={`min-h-screen flex flex-col justify-between + overflow-hidden relative ${isDarkMode
-          ? "bg-gradient-to-br from-gray-900 via-green-900 to-emerald-900"
-          : "bg-gradient-to-br from-gray-50 via-gray-400 to-gray-500"
+        ? "bg-gradient-to-br from-gray-900 via-green-900 to-emerald-900"
+        : "bg-gradient-to-br from-gray-50 via-gray-400 to-gray-500"
         }`}
     >
       {/* Floating Background Shapes */}
@@ -82,11 +91,10 @@ function App() {
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/users" element={
+            <AdminRoute>
+              <UsersPage />
 
-            <ProtectedRoute>
-            <UsersPage />
-           
-            </ProtectedRoute>
+            </AdminRoute>
           }
           />
           <Route
