@@ -117,7 +117,7 @@ const DashboardPage = () => {
 									<img
 										src={
 											user.image
-												? `http://localhost:3000/images/${user.image}`
+												? `https://intern-attendance-webapp.onrender.com/images/${user.image}`
 												: "/profile.png"
 										}
 										alt="User Profile"

@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import axios from "axios";
 
-const API_URL = "http://localhost:3000/api/attendance";
+const API_URL = import.meta.env.MODE === "development" ? "http://localhost:3000/api/attendance": "/api/attendance";
 
 
 export const useAttendanceStore = create((set) => ({
