@@ -411,7 +411,7 @@ const UsersPage = () => {
                                 <img
                                     src={
                                         currentUser.image
-                                            ? `http://localhost:3000/images/${currentUser.image}`
+                                            ? `https://intern-attendance-webapp.onrender.com/images/${currentUser.image}`
                                             : "/profile.png"
                                     }
                                     alt={currentUser.full_name}
