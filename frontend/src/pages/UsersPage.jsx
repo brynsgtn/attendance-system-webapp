@@ -291,7 +291,7 @@ const UsersPage = () => {
                                             <td className="px-3 py-3">
                                                 <div className="flex items-center">
                                                     <img
-                                                        src={user.image ? `http://localhost:3000/images/${user.image}` : "/profile.png"}
+                                                        src={user.image ? `https://intern-attendance-webapp.onrender.com/images/${user.image}` : "/profile.png"}
                                                         alt={user.full_name}
                                                         className="w-8 h-8 rounded-full mr-3"
                                                     />
