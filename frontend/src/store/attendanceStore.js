@@ -145,7 +145,7 @@ export const useAttendanceStore = create((set) => ({
             }));
             
             return {
-                success: true,
+                success: response.status === 201,
                 data: response.data,
                 message: response.data.message
             };

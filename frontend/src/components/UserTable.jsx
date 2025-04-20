@@ -881,7 +881,8 @@ const CreateAttendanceModal = ({ isOpen, onClose, onSave, isDarkMode }) => {
         }
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = (e) => {
+        e.preventDefault();
         const manilaTimeIn = dayjs(formData.time_in).tz('Asia/Manila', true); // Convert to Manila time
         const manilaTimeOut = dayjs(formData.time_out).tz('Asia/Manila', true); // Convert to Manila time
 
