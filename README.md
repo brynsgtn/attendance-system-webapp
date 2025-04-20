@@ -152,12 +152,12 @@ Restrictions:
 ![Signup Page](images/signup.png)
 
 ### 🏠 Dashboard
-![Profile Overview](images/profile.png)
+![Profile Overview and Time In/Out](images/profile.png)
 
 ### 📅 Attendance Management
-![Time In/Out](images/time-in-out.png)
 ![My Attendance](images/my-attendance.png)
 ![My Team Attendance](images/my-team-attendance.png)
+![Interns Attendance](images/interns-attendance.png)
 
 ### 🛠️ Admin Panel
 ![Manage Interns](images/manage-interns.png)
