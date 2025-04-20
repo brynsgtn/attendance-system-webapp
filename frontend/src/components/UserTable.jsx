@@ -85,8 +85,13 @@ const UserTable = ({ refreshKey, setRefreshKey }) => {
 
             console.log(response)
 
-                toast.success("Attendance record created successfully!")
-                setRefreshKey(prev => prev + 1); // triggers refetch
+            // Adjust this based on your backend response structure
+        if (response?.success || response?.status === 200 || response?.status === 201) {
+            toast.success("Attendance record created successfully!");
+            setRefreshKey(prev => prev + 1); // triggers refetch
+        } else {
+            throw new Error(response?.message || "Unexpected response structure");
+        }
               
         } catch (error) {
             console.error("Error creating attendance record:", error);
@@ -187,8 +192,8 @@ const UserTable = ({ refreshKey, setRefreshKey }) => {
                 toast.error("Error updating record:", response)
             }
         } catch (error) {
-            console.error("Error saving edited record:", error.message);
-            toast.error("Error saving edited record:", error.message)
+            console.error("Error saving edited record:", error.response.data);
+            toast.error("Error saving edited record:", error.response.data);
         }
     };
 

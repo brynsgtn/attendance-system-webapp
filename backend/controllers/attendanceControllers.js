@@ -324,7 +324,7 @@ const updateAttendanceTime = async (req, res) => {
             // Check if time_in is before 9 AM
             const timeInHour = timeInDateTime.hour();
             if (timeInHour < 9) {
-                return res.status(400).json({ message: "You can only edit attendance before 9 AM." });
+                return res.status(400).json({ message: "You cannot edit time in before 9 AM." });
             }
         }
 
@@ -338,7 +338,7 @@ const updateAttendanceTime = async (req, res) => {
             // Check if time_out is before 9 AM
             const timeOutHour = timeOutDateTime.hour();
             if (timeOutHour < 9) {
-                return res.status(400).json({ message: "You can only edit attendance before 9 AM." });
+                return res.status(400).json({ message: "You cannot edit time out before 9 AM." });
             }
 
 
