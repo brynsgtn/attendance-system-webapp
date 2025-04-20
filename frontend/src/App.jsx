@@ -35,7 +35,7 @@ const AdminRoute = ({ children }) => {
 // redirect authenticated users to the home page
 const RedirectAuthenticatedUser = ({ children }) => {
   const { isAuthenticated, user } = useAuthStore();
-  if (isAuthenticated && user.isVerified) return <Navigate to="/dashboard" replace />;
+  if (isAuthenticated && user.isVerified) return <Navigate to="/" replace />;
   return children;
 };
 
