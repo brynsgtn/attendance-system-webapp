@@ -83,21 +83,11 @@ const UserTable = ({ refreshKey, setRefreshKey }) => {
                 formData.request_reason
             );
 
-            if (response.success) {
+            console.log(response)
+
                 toast.success("Attendance record created successfully!")
-
-                // Close the modal
-                setIsCreateModalOpen(false);
-
-                // Refresh the attendance list to show the new record
-                const refreshResponse = await fetchUserAttendance(user._id);
-                if (refreshResponse && refreshResponse.data && refreshResponse.data.attendance) {
-                    setUserAttendance(refreshResponse.data.attendance);
-                }
-            } else {
-                console.log(response.message || "Failed to create attendance record");
-                toast.error(response.message || "Failed to create attendance record")
-            }
+                setRefreshKey(prev => prev + 1); // triggers refetch
+              
         } catch (error) {
             console.error("Error creating attendance record:", error);
             setStatusMessage({
@@ -791,6 +781,7 @@ const EditModal = ({ isOpen, onClose, record, isDarkMode, onSave}) => {
 
                 <div className="mt-4 flex justify-end space-x-2">
                     <button
+                        type="button"
                         onClick={onClose}
                         className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-400"
                     >
@@ -881,7 +872,7 @@ const CreateAttendanceModal = ({ isOpen, onClose, onSave, isDarkMode }) => {
         }
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async(e) => {
         e.preventDefault();
         const manilaTimeIn = dayjs(formData.time_in).tz('Asia/Manila', true); // Convert to Manila time
         const manilaTimeOut = dayjs(formData.time_out).tz('Asia/Manila', true); // Convert to Manila time
@@ -894,9 +885,17 @@ const CreateAttendanceModal = ({ isOpen, onClose, onSave, isDarkMode }) => {
         };
 
         console.log("Request body to save:", requestBody);
-
-        if (onSave) {
-            onSave(requestBody); // Pass the formatted data to the parent
+        try {
+            if (onSave) {
+                const result = await onSave(requestBody); // Await the result
+                if (result?.success) {
+                    onClose(); // Only close after successful save
+                } else {
+                    console.error("Save failed:", result?.message);
+                }
+            }
+        } catch (err) {
+            console.error("Error during save:", err);
         }
         onClose();
     };
