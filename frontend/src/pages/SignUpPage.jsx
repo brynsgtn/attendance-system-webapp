@@ -33,8 +33,10 @@ const SignUpPage = () => {
             toast.success("Account created successfully!")
             navigate("/verify-email");
         } catch (error) {
-            toast.error(error.response.data)
-            console.log(error.response.data.message); // Handle API errors
+            const errorMessage = error.response?.data?.message || 
+                                (typeof error.response?.data === 'string' ? error.response.data : 'Failed to create account');
+            toast.error(errorMessage);
+            console.error("Signup error:", error); // Better error logging
         }
     }
 
