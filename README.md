@@ -34,7 +34,7 @@ The Intern Attendance System is a web-based application designed to streamline a
 - Present on all pages.
 - Links to:
   - 3 Company Websites
-  - [<brynsgtn />](https://brynsgtn-webportfolio.vercel.app/) – Developer’s Personal Portfolio
+  - [Bryan Suguitan's Portfolio](https://brynsgtn-webportfolio.vercel.app/) – Developer’s Personal Portfolio
 
 ---
 
