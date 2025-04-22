@@ -86,19 +86,16 @@ const UserTable = ({ refreshKey, setRefreshKey }) => {
             console.log(response)
 
             // Adjust this based on your backend response structure
-        if (response?.success || response?.status === 200 || response?.status === 201) {
-            toast.success("Attendance record created successfully!");
-            setRefreshKey(prev => prev + 1); // triggers refetch
-        } else {
-            throw new Error(response?.message || "Unexpected response structure");
-        }
-              
+            if (response?.success || response?.status === 200 || response?.status === 201) {
+                toast.success("Attendance record created successfully!");
+                setRefreshKey(prev => prev + 1); // triggers refetch
+            } else {
+                throw new Error(response?.message || "Unexpected response structure");
+            }
+
         } catch (error) {
             console.error("Error creating attendance record:", error);
-            setStatusMessage({
-                message: error.response?.data?.message || "Error creating attendance record",
-                type: "error"
-            });
+            toast.error(error.response?.data?.message);
         }
     };
 
@@ -185,8 +182,8 @@ const UserTable = ({ refreshKey, setRefreshKey }) => {
                         record._id === editedRecord._id ? response : record
                     )
                 );
-               setRefreshKey(prev => prev + 1);
-                user.isAdmin? toast.success("Record updated successfully") : toast.success("Record requested successfully")
+                setRefreshKey(prev => prev + 1);
+                user.isAdmin ? toast.success("Record updated successfully") : toast.success("Record requested successfully")
             } else {
                 console.error("Error updating record:", response);
                 toast.error("Error updating record:", response)
@@ -616,7 +613,7 @@ const DeleteConfirmModal = ({ isOpen, onClose, onConfirm, record, isDarkMode }) 
     );
 };
 
-const EditModal = ({ isOpen, onClose, record, isDarkMode, onSave}) => {
+const EditModal = ({ isOpen, onClose, record, isDarkMode, onSave }) => {
     const [editedRecord, setEditedRecord] = useState(record || {});
 
     useEffect(() => {
@@ -877,7 +874,7 @@ const CreateAttendanceModal = ({ isOpen, onClose, onSave, isDarkMode }) => {
         }
     };
 
-    const handleSubmit = async(e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         const manilaTimeIn = dayjs(formData.time_in).tz('Asia/Manila', true); // Convert to Manila time
         const manilaTimeOut = dayjs(formData.time_out).tz('Asia/Manila', true); // Convert to Manila time
