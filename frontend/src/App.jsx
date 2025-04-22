@@ -132,9 +132,7 @@ function App() {
           <Route
             path="/forgot-password"
             element={
-              <RedirectAuthenticatedUser>
                 <ForgotPasswordPage />
-              </RedirectAuthenticatedUser>
             }
           />
           <Route
