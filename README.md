@@ -1,8 +1,7 @@
-# Intern Attendance System Web App
+# Attendance System Web App
 
-> 🚀 **Special Project for Ollopa Corporation Internship**
 
-The Intern Attendance System is a web-based application designed to streamline attendance tracking and user management for interns, team leaders, and administrators.
+The Attendance System is a web-based application designed to streamline attendance tracking and user management for interns, team leaders, and administrators.
 
 ---
 
@@ -142,7 +141,7 @@ Restrictions:
 
 ## 📸 Screenshots
 
-> Here are a few UI previews of the Intern Attendance System Web App:
+> Here are a few UI previews of the Attendance System Web App:
 
 ### 🏁 Landing Page
 ![Landing Page](images/landing.png)
@@ -168,7 +167,7 @@ Restrictions:
 ## 📌 Scope and Limitations
 
 ### ✅ Scope
-- Web-based intern attendance and user management system.
+- Web-based attendance and user management system.
 - Supports three user roles: Admin, TL, Member.
 - Core Features:
   - Email Auth (Login, Signup, Reset, Verification)
@@ -219,5 +218,5 @@ You can view the live version of the Intern Attendance System Web App here:
 ---
 ## 🙌 Acknowledgments
 
-Built with 💻 and ☕ by **Bryan Harold R. Suguitan** for **Ollopa Corporation Internship Program**.
+Built with 💻 and ☕ by **Bryan Harold R. Suguitan**
 
