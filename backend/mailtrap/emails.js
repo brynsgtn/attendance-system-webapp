@@ -38,12 +38,12 @@ export const sendWelcomeEmail = async (email, name) => {
             to: recipient,
             template_uuid: "1bcb4426-dfd3-46e7-93a1-00c60f6fe595",
             template_variables: {
-                "company_info_name": "Ollopa Corporation",
+                "company_info_name": "Your Company Name",
                 "name": name,
-                "company_info_address": "No. 22 Ipil St Sitio Seville",
-                "company_info_city": "Quezon City",
-                "company_info_zip_code": "1100",
-                "company_info_country": "Philippines"
+                "company_info_address": "Your Company Address",
+                "company_info_city": "Your Company City",
+                "company_info_zip_code": "1234",
+                "company_info_country": "Your Company Country"
             }
         });
         console.log("Welcome email sent successfully", response);

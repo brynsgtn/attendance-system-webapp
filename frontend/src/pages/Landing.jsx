@@ -34,7 +34,7 @@ const Landing = () => {
             bg-[200%_200%]
         `}
                 >
-                    Ollopa Internship.
+                   Your Company Name.
                 </h3>
                 <p
                     className={`
@@ -45,7 +45,7 @@ const Landing = () => {
             animate-[fade-in_0.5s_ease-out]
         `}
                 >
-                    Simplify internship attendance management with Ollopa's web app, providing a clear and efficient way to track and record intern hours.
+                    Simplify  attendance management by providing a clear and efficient way to track and record user hours.
                 </p>
 
                 {/* Buttons */}

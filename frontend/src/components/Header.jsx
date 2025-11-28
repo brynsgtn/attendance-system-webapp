@@ -83,7 +83,7 @@ const Header = () => {
                             className={`block font-semibold text-lg md:text-xl 
 		${isDarkMode ? "bg-gradient-to-r from-green-400 to-emerald-600 text-transparent bg-clip-text hover:text-white" : "bg-gradient-to-r from-blue-600 to-blue-500 text-transparent bg-clip-text hover:text-emerald-500"}`}
                         >
-                            Ollopa Internship
+                            Your Company
                         </span>
 
                     </motion.div>

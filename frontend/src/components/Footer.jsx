@@ -1,6 +1,3 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import { FaReddit, FaFacebookF, FaGithub } from "react-icons/fa";
 import { useAuthStore } from "../store/authStore";
 
 const Footer = () => {
@@ -33,35 +30,9 @@ const Footer = () => {
             }
             transition-colors duration-300
           `}>
-            Ollopa Corporation
+            Your Corporation Name
           </p>
 
-          <div className="flex flex-wrap justify-center mt-6 gap-x-6 gap-y-3 text-sm">
-            <a
-              href="https://www.egetinnz.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
-            >
-              eGetinnz
-            </a>
-            <a
-              href="https://fibeidigicards.com/home"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
-            >
-              FibeiDigiCards
-            </a>
-            <a
-              href="https://fibeigreetings.com/new/cards/all"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
-            >
-              FibeiGreetings
-            </a>
-          </div>
         </div>
 
         <hr className="my-8 border-gray-300 dark:border-gray-700" />

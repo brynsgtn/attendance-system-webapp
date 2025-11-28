@@ -19,7 +19,7 @@ export const VERIFICATION_EMAIL_TEMPLATE = `
     <p>Enter this code on the verification page to complete your registration.</p>
     <p>This code will expire in 5 minutes for security reasons.</p>
     <p>If you didn't create an account with us, please ignore this email.</p>
-    <p>Best regards,<br>Ollopa Internship</p>
+    <p>Best regards,<br>Your Company Name</p>
   </div>
   <div style="text-align: center; margin-top: 20px; color: #888; font-size: 0.8em;">
     <p>This is an automated message, please do not reply to this email.</p>
@@ -56,7 +56,7 @@ export const PASSWORD_RESET_SUCCESS_TEMPLATE = `
       <li>Avoid using the same password across multiple sites</li>
     </ul>
     <p>Thank you for helping us keep your account secure.</p>
-    <p>Best regards,<br>Ollopa Internship</p>
+    <p>Best regards,<br>Your Company Name</p>
   </div>
   <div style="text-align: center; margin-top: 20px; color: #888; font-size: 0.8em;">
     <p>This is an automated message, please do not reply to this email.</p>
@@ -85,7 +85,7 @@ export const PASSWORD_RESET_REQUEST_TEMPLATE = `
       <a href="{resetURL}" style="background-color: #4CAF50; color: white; padding: 12px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">Reset Password</a>
     </div>
     <p>This link will expire in 5 minutes for security reasons.</p>
-    <p>Best regards,<br>Ollopa Internship</p>
+    <p>Best regards,<br>Your Company Name</p>
   </div>
   <div style="text-align: center; margin-top: 20px; color: #888; font-size: 0.8em;">
     <p>This is an automated message, please do not reply to this email.</p>
@@ -116,7 +116,7 @@ export const EDIT_REQUEST_EMAIL_TEMPLATE = `
                     <li><strong>Reason for Request: </strong>{requestReason}</li>
                 </ul>
                 <p>Please review and approve/deny the request.</p>
-                <p>Best regards,<br>Ollopa Internship</p>
+                <p>Best regards,<br>Your Company Name</p>
             </div>
         </body>
     </html>
@@ -140,7 +140,7 @@ export const APPROVAL_DENIAL_TEMPLATE = `
     <p>Your request to edit your time-in/time-out record has been <strong>{status}</strong>.</p>
     <p><strong>Details:</strong> {changeDetails}</p>
     <p>If you have any concerns, please reach out to your administrator.</p>
-    <p>Best regards,<br>Ollopa Internship</p>
+    <p>Best regards,<br>Your Company Name</p>
   </div>
 </body>
 </html>`;
@@ -161,7 +161,7 @@ export const COMPLETION_TEMPLATE = `
     <p>Hello {memberName},</p>
     <p>Your internship has been successfully completed. Congratulations!</p>
     <p>You can now request your certificate of completion. If you have any questions, feel free to contact us.</p>
-    <p>Best regards,<br>Ollopa Internship</p>
+    <p>Best regards,<br>Your Company Name</p>
   </div>
 </body>
 </html>`;
