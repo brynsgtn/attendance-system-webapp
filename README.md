@@ -31,8 +31,7 @@ The Attendance System is a web-based application designed to streamline attendan
 
 ### 3. Footer
 - Present on all pages.
-- Links to:
-  - 3 Company Websites
+- Link to:
   - [Bryan Suguitan's Portfolio](https://brynsgtn-webportfolio.vercel.app/) – Developer’s Personal Portfolio
 
 ---
@@ -212,7 +211,7 @@ Restrictions:
 
 ## 🚀 Live Link
 
-You can view the live version of the Intern Attendance System Web App here:  
+You can view the live version of the Attendance System Web App here:  
 [Live Demo](https://intern-attendance-webapp.onrender.com/)
 
 ---
